@@ -7,12 +7,11 @@ from rest_framework.authtoken.models import Token
 from .models import Task
 from .serializers import TaskSerializer
 
-# 1. Registration View
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def register_user(map_request):
-    username = map_request.data.get('username')
-    password = map_request.data.get('password')
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
     
     if not username or not password:
         return Response({'error': 'Please provide both username and password'}, status=status.HTTP_400_BAD_REQUEST)
@@ -24,15 +23,13 @@ def register_user(map_request):
     token, created = Token.objects.get_or_create(user=user)
     return Response({'token': token.key}, status=status.HTTP_201_CREATED)
 
-# 2. Tasks List & Create View
 class TaskListCreate(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Only returns tasks belonging to the logged-in user
         return Task.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        # Saves the task explicitly tied to the logged-in user
+        # Automatically links the task to the authenticated token user
         serializer.save(user=self.request.user)
