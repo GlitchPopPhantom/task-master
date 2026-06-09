@@ -54,8 +54,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi:application'
 
-# Database Engine Router (Handles cloud Postgres vs local SQLite)
-DATABASE_URL = os.environ.get('DATABASE_URL')
+# Safe Database Engine Router (Falls back to local SQLite if DATABASE_URL breaks)
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+
 if DATABASE_URL:
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
