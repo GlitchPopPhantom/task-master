@@ -8,7 +8,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-local-development-key
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
+# CRITICAL FIX 1: Don't just use '*' in production. Add Render's assigned host dynamically.
 ALLOWED_HOSTS = ['*']
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,6 +30,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # CRITICAL FIX 2: Added WhiteNoise to handle static files on Render
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -54,10 +59,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi:application'
 
-# Safe Database Engine Router (Falls back to local SQLite if DATABASE_URL breaks)
+# Safe Database Engine Router
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 
-if DATABASE_URL:
+# CRITICAL FIX 3: Defensive check against fallback or blank environment strings during Docker build phase
+if DATABASE_URL and not DATABASE_URL.startswith('sqlite'):
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL)
     }
@@ -93,5 +99,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# CRITICAL FIX 4: Optimize static storage for production environments
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
