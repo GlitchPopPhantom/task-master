@@ -6,7 +6,7 @@ import {
 import axios from 'axios';
 
 // Switch this to your local computer's IP address if testing on a physical phone!
-const API_URL = 'http://task-master-6ou2.onrender.com/api';
+const API_URL = 'http://task-master-6ou2.onrender.com';
 
 export default function App() {
   const [username, setUsername] = useState('');
