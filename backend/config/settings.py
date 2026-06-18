@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-import dj_database_url
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -58,16 +58,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi:application'
 
-# Safe Database Engine Router using robust configuration parser
+# Safe Database Engine Router
 DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
 
-if DATABASE_URL:
+if DATABASE_URL and (DATABASE_URL.startswith('postgres://') or DATABASE_URL.startswith('postgresql://')):
+    url = urlparse(DATABASE_URL)
+    
+    db_name = url.path.lstrip('/')
+    db_user = url.username
+    db_password = url.password
+    db_host = url.hostname
+    db_port = url.port or 5432
+
     DATABASES = {
-        'default': dj_database_url.config(
-            default=DATABASE_URL,
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': str(db_port),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+            'CONN_MAX_AGE': 600,
+        }
     }
 else:
     DATABASES = {
