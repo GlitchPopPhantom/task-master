@@ -5,16 +5,9 @@ set -o errexit
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. CRITICAL FIX: Inject a temporary dummy fallback URL right here 
-# so Django can compile static assets without needing your live database.
-export DATABASE_URL="postgres://dummy:dummy@localhost:5432/dummy"
+# 2. Compile static assets safely
+# We pass the dummy string inline ONLY for collectstatic so it doesn't touch your real env
+DATABASE_URL="postgres://dummy:dummy@localhost:5432/dummy" python manage.py collectstatic --no-input
 
-# 3. Compile static assets safely
-python manage.py collectstatic --no-input
-
-# 4. Remove or unset the dummy variable so the runtime container 
-# uses your real production Render/Supabase variables instead.
-unset DATABASE_URL
-
-# 5. Run live migrations (This runs once the app transitions to live mode)
+# 3. Run live migrations against your actual Render database
 python manage.py migrate
