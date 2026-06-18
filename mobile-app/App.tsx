@@ -5,8 +5,8 @@ import {
 } from 'react-native';
 import axios from 'axios';
 
-// Switch this to your local computer's IP address if testing on a physical phone!
-const API_URL = 'http://task-master-6ou2.onrender.com';
+// 1. Cleansed base address to prevent doubling path blocks
+const API_URL = 'https://task-master-6ou2.onrender.com';
 
 export default function App() {
   const [username, setUsername] = useState('');
@@ -15,7 +15,7 @@ export default function App() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [taskInput, setTaskInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isLoginMode, setIsLoginMode] = useState(true); // Toggles between Login and Sign Up UI
+  const [isLoginMode, setIsLoginMode] = useState(true); 
 
   // Load token on startup
   useEffect(() => {
@@ -34,6 +34,7 @@ export default function App() {
 
   const fetchTasks = async () => {
     try {
+      // 2. Fixed concatenated endpoint query
       const res = await axios.get(`${API_URL}/api/tasks/`, {
         headers: { Authorization: `Token ${token}` },
       });
@@ -51,6 +52,7 @@ export default function App() {
     setLoading(true);
     const endpoint = isLoginMode ? 'login' : 'register';
     try {
+      // 3. Fixed authorization request routing
       const res = await axios.post(`${API_URL}/api/${endpoint}/`, { username, password });
       const userToken = res.data.token;
       
@@ -71,6 +73,7 @@ export default function App() {
   const addTask = async () => {
     if (!taskInput.trim()) return;
     try {
+      // 4. Fixed operational task push URI
       const res = await axios.post(
         `${API_URL}/api/tasks/`,
         { title: taskInput }, 
@@ -204,14 +207,10 @@ export default function App() {
   );
 }
 
-// -----------------------------------------
-// THE CSS / STYLESHEET
-// -----------------------------------------
 const styles = StyleSheet.create({
-  // Global
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6', // Sleek light gray
+    backgroundColor: '#F3F4F6', 
     justifyContent: 'center',
   },
   loadingContainer: {
@@ -226,8 +225,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-
-  // Auth Screen
   authCard: {
     backgroundColor: '#FFFFFF',
     marginHorizontal: 30,
@@ -263,7 +260,7 @@ const styles = StyleSheet.create({
     color: '#111827',
   },
   primaryButton: {
-    backgroundColor: '#4F46E5', // Indigo
+    backgroundColor: '#4F46E5', 
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -292,8 +289,6 @@ const styles = StyleSheet.create({
     color: '#4F46E5',
     fontWeight: '700',
   },
-
-  // Dashboard Screen
   dashboardContainer: {
     flex: 1,
     paddingHorizontal: 20,
@@ -316,7 +311,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   logoutPill: {
-    backgroundColor: '#FEE2E2', // Light red
+    backgroundColor: '#FEE2E2', 
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -363,7 +358,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 28,
     fontWeight: '300',
-    lineHeight: 32, // Centers the '+' perfectly
+    lineHeight: 32, 
   },
   listContent: {
     paddingBottom: 40,
